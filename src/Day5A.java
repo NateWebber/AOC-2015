@@ -86,33 +86,17 @@ public class Day5A {
         ArrayList<String> pairs = new ArrayList<>();
         for (int i = 0; i < (s.length() - 1); i++) {
             String pair = s.substring(i, i + 2);
-            System.out.printf("%d : %s\n", i, pair);
-            if (pairs.contains(pair)) {
-                if (!(pair.charAt(0) == pair.charAt(1))) {
-                    pairFound = true;
-
-                } else {
-                    if (i == 0) {
-                        if (!(pair.charAt(1) == s.charAt(i + 2))) {
-                            pairFound = true;
-
-                        }
-                    } else if (i == (s.length() - 2)) {
-                        if (!(pair.charAt(0) == s.charAt(i - 1))) {
-                            pairFound = true;
-
-                        }
-                    } else {
-                        if (!(pair.charAt(0) == s.charAt(i - 1)) && !(pair.charAt(1) == s.charAt(i +
-                                2))) {
-                            pairFound = true;
-
-                        }
-                    }
-                }
-            }
             pairs.add(pair);
         }
+        for (int i = 0; i < pairs.size() - 1; i++) {
+            for (int j = i + 1; j < pairs.size(); j++) {
+                if (pairs.get(i).equals(pairs.get(j)) && !(j == i + 1)) {
+                    System.out.printf("found pair of %s at indices %d, %d\n", pairs.get(i), i, j);
+                    pairFound = true;
+                }
+            }
+        }
+
         System.out.printf("trio: %s - pair: %s\n", trioFound, pairFound);
         return trioFound && pairFound;
     }
