@@ -8,71 +8,45 @@ import java.util.Scanner;
 * Nathaniel Webber xx/xx/22
 */
 
+//b starts at 1674
 public class Day7A {
-    static HashMap<String, Integer> wireMap;
+    static HashMap<String, Wire> wireMap;
+
+    private static class Wire {
+        private String source;
+        private String symbol;
+
+        public Wire(String symbo, String source) {
+            this.symbol = symbol;
+        }
+
+        public void setSource(String s) {
+            this.source = s;
+        }
+    }
 
     public static void main(String[] args) throws FileNotFoundException {
         File inFile = new File("./input/Day7A.txt");
         Scanner inScanner = new Scanner(inFile);
-        wireMap = new HashMap<>();
+        wireMap = new HashMap<String, Wire>();
         while (inScanner.hasNextLine()) {
-            parseInstruction(inScanner.nextLine());
+            parseLineToWire(inScanner.nextLine());
         }
-        System.out.printf("Signal on wire a is: %d\n", wireMap.get("a"));
         inScanner.close();
     }
 
-    private static void parseInstruction(String line) {
-        System.out.printf("parsing %s\n", line);
-        String[] splitArr = line.split(" ");
-        if (splitArr[0].equals("NOT"))
-            notOp(splitArr[1], splitArr[3]);
-        else {
-            switch (splitArr[1]) {
-                case "->":
-                    assignOp(splitArr[0], splitArr[2]);
-                    break;
-                case "AND":
-                    andOp(splitArr[0], splitArr[2], splitArr[4]);
-                    break;
-                case "OR":
-                    orOp(splitArr[0], splitArr[2], splitArr[4]);
-                    break;
-                case "LSHIFT":
-                    leftShiftOp(splitArr[0], splitArr[2], splitArr[4]);
-                    break;
-                case "RSHIFT":
-                    rightShiftOp(splitArr[0], splitArr[2], splitArr[4]);
-                default:
-                    System.out.printf("instruction parse of %s failed...\n", line);
-            }
-        }
+    private static void parseLineToWire(String line) {
+        String[] splitArr = line.split("->");
+        splitArr[0] = splitArr[0].substring(0, splitArr[0].length() - 1);
+        splitArr[1] = splitArr[1].substring(1);
+        System.out.printf("split line into %s,%s\n", splitArr[0], splitArr[1]);
+        String wireName = splitArr[1];
+        Wire newWire = new Wire(wireName, splitArr[0]);
+        wireMap.put(wireName, newWire);
     }
 
-    private static void notOp(String source, String destination) {
-        wireMap.put(destination, ~(wireMap.get(source)));
+    private int evaluateWire(Wire w) {
+        return 0;
     }
 
-    private static void assignOp(String value, String destination) {
-        wireMap.put(destination, Integer.parseInt(value));
-    }
-
-    private static void andOp(String source1, String source2, String destination) {
-        wireMap.put(destination, (wireMap.get(source1) & wireMap.get(source2)));
-    }
-
-    private static void orOp(String source1, String source2, String destination) {
-        wireMap.put(destination, (wireMap.get(source1) | wireMap.get(source2)));
-
-    }
-
-    private static void leftShiftOp(String source1, String source2, String destination) {
-        wireMap.put(destination, (wireMap.get(source1) << wireMap.get(source2)));
-
-    }
-
-    private static void rightShiftOp(String source1, String source2, String destination) {
-        wireMap.put(destination, (wireMap.get(source1) >> wireMap.get(source2)));
-
-    }
 }
