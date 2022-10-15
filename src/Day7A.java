@@ -16,13 +16,27 @@ public class Day7A {
         private String source;
         private String symbol;
 
-        public Wire(String symbo, String source) {
+        public Wire(String symbol, String source) {
             this.symbol = symbol;
+            this.source = source;
+        }
+
+        public String getSymbol() {
+            return this.symbol;
         }
 
         public void setSource(String s) {
             this.source = s;
         }
+
+        public String getSource() {
+            return this.source;
+        }
+
+        public String toString() {
+            return String.format("Symbol: %s - Source: %s\n", this.symbol, this.source);
+        }
+
     }
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -32,6 +46,7 @@ public class Day7A {
         while (inScanner.hasNextLine()) {
             parseLineToWire(inScanner.nextLine());
         }
+        System.out.printf("Signal on wire a: %d\n", evaluateWire(wireMap.get("a")));
         inScanner.close();
     }
 
@@ -39,14 +54,38 @@ public class Day7A {
         String[] splitArr = line.split("->");
         splitArr[0] = splitArr[0].substring(0, splitArr[0].length() - 1);
         splitArr[1] = splitArr[1].substring(1);
-        System.out.printf("split line into %s,%s\n", splitArr[0], splitArr[1]);
+        // System.out.printf("split line into %s,%s\n", splitArr[0], splitArr[1]);
         String wireName = splitArr[1];
         Wire newWire = new Wire(wireName, splitArr[0]);
         wireMap.put(wireName, newWire);
     }
 
-    private int evaluateWire(Wire w) {
-        return 0;
+    private static int evaluateWire(Wire w) {
+        System.out.printf("evaluating %s - %s\n", w.getSymbol(), w.getSource());
+        if (w.getSource().matches("\\d+")) // cheeky regex to see if string is an int
+            return Integer.parseInt(w.getSource());
+        String[] sourceSplit = w.getSource().split(" ");
+        if (sourceSplit.length == 1) // direct assignment from other wire
+            return evaluateWire(wireMap.get(sourceSplit[0]));
+        if (sourceSplit[0].equals("NOT"))
+            return ~(evaluateWire(wireMap.get(sourceSplit[1])));
+        switch (sourceSplit[1]) {
+            case "LSHIFT":
+                return evaluateWire(wireMap.get(sourceSplit[0])) << Integer.parseInt(sourceSplit[2]);
+            case "RSHIFT":
+                return evaluateWire(wireMap.get(sourceSplit[0])) >> Integer.parseInt(sourceSplit[2]);
+            case "AND":
+                if (sourceSplit[0].matches("\\d+"))
+                    return Integer.parseInt(sourceSplit[0]) & evaluateWire(wireMap.get(sourceSplit[2]));
+                return evaluateWire(wireMap.get(sourceSplit[0])) & evaluateWire(wireMap.get(sourceSplit[2]));
+            case "OR":
+                return evaluateWire(wireMap.get(sourceSplit[0])) | evaluateWire(wireMap.get(sourceSplit[2]));
+            default:
+                System.out.printf("broke on wire %s, source %s\nresults likely incorrect...\n", w.getSymbol(),
+                        w.getSource());
+                return 0;
+        }
+
     }
 
 }
