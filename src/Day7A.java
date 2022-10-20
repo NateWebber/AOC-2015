@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 /*
 * Advent of Code 2015 Day 7 Part A and B
-* Nathaniel Webber xx/xx/22
+* Nathaniel Webber 10/20/22
 */
 
 //b starts at 1674
