@@ -10,7 +10,9 @@ import java.util.Scanner;
 
 //b starts at 1674
 public class Day7A {
+    static boolean doPartTwo = true;
     static HashMap<String, Wire> wireMap;
+    static int PART_ONE_SIGNAL = 46065;
 
     private static class Wire {
         private String source;
@@ -46,7 +48,10 @@ public class Day7A {
         while (inScanner.hasNextLine()) {
             parseLineToWire(inScanner.nextLine());
         }
-        System.out.printf("Signal on wire a: %d\n", evaluateWire(wireMap.get("a")));
+        if (doPartTwo) {
+            wireMap.get("b").setSource(String.valueOf(PART_ONE_SIGNAL));
+        }
+        System.out.printf("Signal on wire a: %d\n", evaluateWire(wireMap.get("a"), 0));
         inScanner.close();
     }
 
@@ -60,26 +65,45 @@ public class Day7A {
         wireMap.put(wireName, newWire);
     }
 
-    private static int evaluateWire(Wire w) {
-        System.out.printf("evaluating %s - %s\n", w.getSymbol(), w.getSource());
-        if (w.getSource().matches("\\d+")) // cheeky regex to see if string is an int
+    private static int evaluateWire(Wire w, int depth) {
+        for (int i = 0; i < depth; i++)
+            System.out.print(" ");
+        System.out.printf("DEPTH %d: evaluating %s - %s\n", depth, w.getSymbol(), w.getSource());
+        if (w.getSource().matches("\\d+")) { // cheeky regex to see if string is an int
+            // System.out.printf("int regex fired\n");
             return Integer.parseInt(w.getSource());
+        }
         String[] sourceSplit = w.getSource().split(" ");
-        if (sourceSplit.length == 1) // direct assignment from other wire
-            return evaluateWire(wireMap.get(sourceSplit[0]));
-        if (sourceSplit[0].equals("NOT"))
-            return ~(evaluateWire(wireMap.get(sourceSplit[1])));
+        if (sourceSplit.length == 1) { // direct assignment from other wire
+            w.setSource(String.valueOf(evaluateWire(wireMap.get(sourceSplit[0]), depth + 1)));
+            return Integer.parseInt(w.getSource());
+        }
+        if (sourceSplit[0].equals("NOT")) {
+            w.setSource(String.valueOf(~(evaluateWire(wireMap.get(sourceSplit[1]), depth + 1))));
+            return Integer.parseInt(w.getSource());
+        }
         switch (sourceSplit[1]) {
             case "LSHIFT":
-                return evaluateWire(wireMap.get(sourceSplit[0])) << Integer.parseInt(sourceSplit[2]);
+                w.setSource(String.valueOf(
+                        evaluateWire(wireMap.get(sourceSplit[0]), depth + 1) << Integer.parseInt(sourceSplit[2])));
+                return Integer.parseInt(w.getSource());
             case "RSHIFT":
-                return evaluateWire(wireMap.get(sourceSplit[0])) >> Integer.parseInt(sourceSplit[2]);
+                w.setSource(String.valueOf(
+                        evaluateWire(wireMap.get(sourceSplit[0]), depth + 1) >> Integer.parseInt(sourceSplit[2])));
+                return Integer.parseInt(w.getSource());
             case "AND":
-                if (sourceSplit[0].matches("\\d+"))
-                    return Integer.parseInt(sourceSplit[0]) & evaluateWire(wireMap.get(sourceSplit[2]));
-                return evaluateWire(wireMap.get(sourceSplit[0])) & evaluateWire(wireMap.get(sourceSplit[2]));
+                if (sourceSplit[0].matches("\\d+")) {
+                    w.setSource(String.valueOf(
+                            Integer.parseInt(sourceSplit[0]) & evaluateWire(wireMap.get(sourceSplit[2]), depth + 1)));
+                    return Integer.parseInt(w.getSource());
+                }
+                w.setSource(String.valueOf(evaluateWire(wireMap.get(sourceSplit[0]), depth + 1)
+                        & evaluateWire(wireMap.get(sourceSplit[2]), depth + 1)));
+                return Integer.parseInt(w.getSource());
             case "OR":
-                return evaluateWire(wireMap.get(sourceSplit[0])) | evaluateWire(wireMap.get(sourceSplit[2]));
+                w.setSource(String.valueOf(evaluateWire(wireMap.get(sourceSplit[0]), depth + 1)
+                        | evaluateWire(wireMap.get(sourceSplit[2]), depth + 1)));
+                return Integer.parseInt(w.getSource());
             default:
                 System.out.printf("broke on wire %s, source %s\nresults likely incorrect...\n", w.getSymbol(),
                         w.getSource());
